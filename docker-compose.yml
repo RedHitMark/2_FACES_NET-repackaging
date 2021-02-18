@@ -1,0 +1,28 @@
+version: "3.2"
+
+services:
+  # App
+  server:
+    container_name: app
+    build: .
+    # env_file: .env
+    restart: always
+    ports:
+      - 50000:5000
+    volumes:
+      - './upload_dir:/server/upload_dir'
+#    depends_on:
+#      - database
+#    links:
+#      - database
+
+  # MariaDB
+#  database:
+#    container_name: database
+#    image: mariadb:bionic
+#    # env_file: .env
+#    restart: always
+#    ports:
+#     - 3306:3306
+##    volumes:
+##     - ./mysql-dump:/docker-entrypoint-initdb.d

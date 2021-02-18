@@ -1,0 +1,6 @@
+app/.env
+upload_dir
+venv
+.idea
+javalib/debug.keystore
+javalib/debug.keystore.lock
