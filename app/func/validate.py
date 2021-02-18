@@ -4,8 +4,8 @@ import os
 
 def submit_to_virustotal():
     url = 'https://www.virustotal.com/api/v3/files'
-    headers = {'x-apikey': '5d79ad0a589d1cc65d0223f92f2bfad6142811b60e8c3b90eb5e598aecdc291f'}
-    files = {'file': open(os.getcwd() + "/../../upload_dir/8.-quadro-normativo.pdf", 'rb')}
+    headers = {'x-apikey': os.getenv("VIRUS_TOTAL_API")}
+    files = {'file': open(os.getcwd() + "/../../upload_dir/test.apk", 'rb')}
 
     r = requests.post(url=url, headers=headers, files=files)
     print(r.json())
@@ -13,7 +13,7 @@ def submit_to_virustotal():
 
 def get_virustotal_report(file_id):
     url = 'https://www.virustotal.com/api/v3/analyses/' + file_id
-    headers = {'x-apikey': '5d79ad0a589d1cc65d0223f92f2bfad6142811b60e8c3b90eb5e598aecdc291f'}
+    headers = {'x-apikey': os.getenv("VIRUS_TOTAL_API")}
     r1 = requests.get(url=url, headers=headers)
     response = r1.json()
     print(response)

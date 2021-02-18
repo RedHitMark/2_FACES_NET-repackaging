@@ -1,6 +1,6 @@
-#2_FACES_NET
+# 2_FACES_NET
 
-##Getting started
+## Getting started
 Create python virtual environment
 ```
 python -m venv venv
