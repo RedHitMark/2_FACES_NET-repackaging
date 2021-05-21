@@ -16,7 +16,10 @@ async def hack(entry_id: int):
         disas.add_pezzotto(original_file_hash)
 
         disas.reassemble(original_file_hash)
-        disas.sign(original_file_hash)
+        new_file_hash_md5, new_file_hash_sha1, new_filesize = disas.sign(original_file_hash)
 
+        files_db.create(new_file_hash_sha1, new_filesize)
+        entries_db.update_by_id(entry_id, new_file_hash_sha1)
+        return 'done'
     else:
         return 'alive'

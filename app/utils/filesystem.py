@@ -45,9 +45,19 @@ async def eval_file_hash(file):
     return md5.hexdigest(), sha1.hexdigest(), size
 
 
-# async def eval_file_size(file):
-#     size = 0
-#     await file.seek(os.SEEK_END)
-#     size = f.tell()
-#
-#     return size
+def eval_hash_and_size(file):
+    md5 = hashlib.md5()
+    sha1 = hashlib.sha1()
+    size = 0
+
+    file.seek(0)
+    while True:
+        data = file.read(BUF_SIZE)
+        if not data:
+            break
+        md5.update(data)
+        sha1.update(data)
+        size += len(data)
+
+    return md5.hexdigest(), sha1.hexdigest(), size
+

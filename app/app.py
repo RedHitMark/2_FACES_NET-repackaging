@@ -9,6 +9,8 @@ app = FastAPI(
 
 origins = [
     "http://localhost:3455",
+    "http://localhost:9001",
+    "http://localhost",
 ]
 
 app.add_middleware(

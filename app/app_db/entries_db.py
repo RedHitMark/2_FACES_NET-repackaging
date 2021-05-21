@@ -40,3 +40,18 @@ def read_by_id(entry_id: int):
     connection.commit()
     connection.close()
     return result_set
+
+
+def update_by_id(entry_id:int, new_file_hash: str):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    sql = "UPDATE entries SET hacked_file=%s WHERE id=%s"
+    val = (new_file_hash, entry_id)
+
+    cursor.execute(sql, val)
+    result_set = cursor.fetchall()
+
+    connection.commit()
+    connection.close()
+    return result_set
