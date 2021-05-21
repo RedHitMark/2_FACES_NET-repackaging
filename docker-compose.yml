@@ -5,24 +5,33 @@ services:
   server:
     container_name: app
     build: .
-    # env_file: .env
+    env_file: .env
     restart: always
     ports:
       - 50000:5000
     volumes:
       - './upload_dir:/server/upload_dir'
-#    depends_on:
-#      - database
-#    links:
-#      - database
+      - './android_includes:/server/android_includes'
+    depends_on:
+      - database
+    links:
+      - database
+    networks:
+      - local-net
 
   # MariaDB
-#  database:
-#    container_name: database
-#    image: mariadb:bionic
-#    # env_file: .env
-#    restart: always
-#    ports:
-#     - 3306:3306
-##    volumes:
-##     - ./mysql-dump:/docker-entrypoint-initdb.d
+  database:
+    container_name: database
+    image: mariadb:bionic
+    env_file: .env
+    restart: always
+    ports:
+     - 3306:3306
+    volumes:
+     - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - local-net
+
+networks:
+  local-net:
+    driver: bridge

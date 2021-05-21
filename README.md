@@ -1,16 +1,18 @@
 # 2_FACES_NET
 
 ## Getting started
+
+### Using `Python` and `pip`
 Create python virtual environment
-```
+```sh
 python -m venv venv
 ```
 
 Activate the virtual environment
 ```
-on Windows
+-> on Windows <-
 ./venv/Scripts/activate
-on Linux/macOS
+-> on Linux/macOS <-
 source ./venv/bin/activate
 ```
 
@@ -28,3 +30,5 @@ Start the server
 ```
 SERVER_NAME=5000
 ```
+
+### Using `docker` and `docker-compose`
