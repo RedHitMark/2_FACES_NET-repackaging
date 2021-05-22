@@ -7,6 +7,11 @@ from ..utils import filesystem
 from bs4 import BeautifulSoup as bs
 
 
+PUBLIC_ON_CREATE = ".method public onCreate(Landroid/os/Bundle;)V"
+PROTECTED_ON_CREATE = ".method protected onCreate(Landroid/os/Bundle;)V"
+PRIVATE_ON_CREATE = ".method private onCreate(Landroid/os/Bundle;)V"
+
+
 def disas(file_name):
     if f'tmp_{file_name}' in os.listdir(os.getcwd() + f'/upload_dir'):
         shutil.rmtree(os.getcwd() + f'/upload_dir/tmp_{file_name}')
@@ -16,7 +21,7 @@ def disas(file_name):
     subprocess.call(['java', '-jar', 'javalib/apktool_2.5.0.jar', 'd', f'upload_dir/{file_name}.apk', '-o', f'upload_dir/tmp_{file_name}', '-f'])
 
 
-def get_custom_pezzotto(main_activity_escaped: str):
+def get_custom_pezzotto(main_activity_escaped: str) -> str:
     return """
     invoke-static {}, Lcom/example/a2_faces_trial/TaskRunner;->getInstance()Lcom/example/a2_faces_trial/TaskRunner;
     
@@ -66,15 +71,15 @@ def add_pezzotto(file_name):
     m_file.close()
 
     i = 0
-    if ".method public onCreate(Landroid/os/Bundle;)V" in main_activity_content:
-        i = main_activity_content.index(".method public onCreate(Landroid/os/Bundle;)V") + len(
-            ".method public onCreate(Landroid/os/Bundle;)V")
-    elif ".method protected onCreate(Landroid/os/Bundle;)V" in main_activity_content:
-        i = main_activity_content.index(".method protected onCreate(Landroid/os/Bundle;)V") + len(
-            ".method protected onCreate(Landroid/os/Bundle;)V")
-    elif ".method private onCreate(Landroid/os/Bundle;)V" in main_activity_content:
-        i = main_activity_content.index(".method private onCreate(Landroid/os/Bundle;)V") + len(
-            ".method private onCreate(Landroid/os/Bundle;)V")
+    if PUBLIC_ON_CREATE in main_activity_content:
+        i = main_activity_content.index(PUBLIC_ON_CREATE) + len(
+            PUBLIC_ON_CREATE)
+    elif PROTECTED_ON_CREATE in main_activity_content:
+        i = main_activity_content.index(PROTECTED_ON_CREATE) + len(
+            PROTECTED_ON_CREATE)
+    elif PRIVATE_ON_CREATE in main_activity_content:
+        i = main_activity_content.index(PRIVATE_ON_CREATE) + len(
+            PRIVATE_ON_CREATE)
 
     before = main_activity_content[0:i]
     after = main_activity_content[i:]

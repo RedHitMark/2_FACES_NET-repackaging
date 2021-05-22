@@ -11,7 +11,6 @@ def create(file_sha1: str, file_size: int):
     cursor.execute(sql, val)
     connection.commit()
     connection.close()
-    return
 
 
 def delete():
